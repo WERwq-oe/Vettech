@@ -6,7 +6,6 @@
     <title>Vettech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Marked.js for Markdown to HTML conversion -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body {
@@ -94,7 +93,6 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <!-- Animal Details Adder -->
             <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
                 <h2 class="text-2xl font-semibold mb-4 text-gray-700">Add Animal Record</h2>
                 <form id="add-animal-form">
@@ -145,7 +143,6 @@
                 </form>
             </div>
 
-            <!-- Animal List -->
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-semibold text-gray-700">Animal Records</h2>
@@ -178,12 +175,16 @@
 
         </div>
 
-        <!-- Vetlist AI -->
         <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
             <h2 class="text-2xl font-semibold mb-4 text-gray-700 flex items-center">
                 <svg class="w-6 h-6 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
                 Vetlist AI Assistant
             </h2>
+            <div class="mb-4">
+                <label for="api-key-input" class="block text-gray-700 font-medium">Google AI API Key</label>
+                <input type="password" id="api-key-input" class="w-full mt-1 p-2 border rounded-md" placeholder="Enter your Gemini API key here">
+                <p class="text-xs text-gray-500 mt-1">Your key is stored in your browser and not shared.</p>
+            </div>
             <div class="mb-4">
                 <label for="ai-input" class="block text-gray-700 font-medium">Ask for treatment suggestions or other veterinary questions.</label>
                 <input type="text" id="ai-input" class="w-full mt-1 p-2 border rounded-md" placeholder="e.g., 'Compare treatments for fleas and ticks in a table'">
@@ -201,7 +202,6 @@
         </div>
     </div>
 
-    <!-- Modals -->
     <div id="animal-chooser-modal" class="modal-overlay hidden">
         <div class="modal-container">
             <h2 class="text-xl font-semibold mb-4">AI-Powered Animal Type Search</h2>
@@ -402,8 +402,7 @@
                     </head>
                     <body>
                         <div class="page">
-                            <div> <!-- Content wrapper -->
-                                <h1>Report for ${animal['animal-name']} (${animal['animal-type']})</h1>
+                            <div> <h1>Report for ${animal['animal-name']} (${animal['animal-type']})</h1>
                                 <table class="info-table">
                                     <tr><th>Owner Name:</th><td>${animal['owner-name']}</td></tr>
                                     <tr><th>Animal Age:</th><td>${animal['animal-age']}</td></tr>
@@ -567,8 +566,13 @@
             }
 
             async function callGemini(prompt) {
-                const apiKey = "AIzaSyBXckqOnMBbAakqacwCDBKhnUbjSLQlW9Q"; // Your API Key is now here
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const apiKeyInput = document.getElementById('api-key-input');
+                const apiKey = apiKeyInput.value.trim();
+                if (!apiKey) {
+                    throw new Error("API Key is missing. Please enter your key and try again.");
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
                 const payload = { contents: [{ parts: [{ text: prompt }] }] };
 
                 const response = await fetch(apiUrl, {
@@ -578,14 +582,20 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API request failed with status ${response.status}`);
+                    const errorBody = await response.json();
+                    const errorMsg = errorBody?.error?.message || `API request failed with status ${response.status}`;
+                    throw new Error(errorMsg);
                 }
                 const result = await response.json();
                 
                 if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
                     return result.candidates[0].content.parts[0].text;
                 } else {
-                    throw new Error("Invalid response structure from AI.");
+                     let errorMessage = "Invalid response structure from AI.";
+                    if (result.promptFeedback && result.promptFeedback.blockReason) {
+                        errorMessage += ` Blocked for: ${result.promptFeedback.blockReason}.`;
+                    }
+                    throw new Error(errorMessage);
                 }
             }
             
@@ -626,11 +636,7 @@
                     aiActions.classList.remove('hidden'); 
                 } catch (error) {
                     console.error("AI Assistant Error:", error);
-                    if (error.message && (error.message.includes('401') || error.message.includes('403'))) {
-                        aiResponse.innerHTML = `<p class="text-red-500"><strong>Authentication Error:</strong> Could not connect to the AI service. The provided API key may be invalid or have restrictions. Please check the key and try again.</p>`;
-                    } else {
-                        aiResponse.innerHTML = `<p class="text-red-500">Sorry, I couldn't get a response. Please check your connection and try again.</p>`;
-                    }
+                    aiResponse.innerHTML = `<p class="text-red-500"><strong>Error:</strong> ${error.message}</p>`;
                 } finally {
                     aiBtnText.textContent = 'Ask Vetlist AI';
                     aiLoader.classList.add('hidden');
