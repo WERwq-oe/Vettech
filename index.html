@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vettech</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown to HTML conversion -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 24px;
+            height: 24px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Styling for AI-generated content */
+        #ai-response {
+             background-color: white;
+             border: 1px solid #e2e8f0;
+        }
+        #ai-response table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        #ai-response th, #ai-response td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        #ai-response th {
+            background-color: #f2f2f2;
+            font-weight: 600;
+        }
+        #ai-response p, #ai-response ul, #ai-response ol {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        #ai-response ul, #ai-response ol {
+            padding-left: 1.5rem;
+        }
+        #ai-response li {
+            margin-bottom: 0.5rem;
+        }
+        .selected-row {
+            background-color: #ebf8ff;
+            border-left: 4px solid #4299e1;
+        }
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            width: 90%;
+            max-width: 500px;
+        }
+        #signature-pad {
+            border: 2px solid #000;
+            cursor: crosshair;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto p-4">
+        <header class="text-center mb-10">
+            <h1 class="text-5xl font-bold text-gray-800">Vettech</h1>
+            <p class="text-xl text-gray-500">Your Modern Veterinary Data Management Solution</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Animal Details Adder -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-700">Add Animal Record</h2>
+                <form id="add-animal-form">
+                    <div class="mb-4">
+                        <label for="animal-type" class="block text-gray-700 font-medium">Animal Type (e.g., Dog, Cat)</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="animal-type" class="w-full mt-1 p-2 border rounded-md" required>
+                            <button type="button" id="ai-search-btn" class="mt-1 px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">AI Search</button>
+                        </div>
+                    </div>
+                     <div class="mb-4">
+                        <label for="animal-name" class="block text-gray-700 font-medium">Animal Name (e.g., Buddy)</label>
+                        <input type="text" id="animal-name" class="w-full mt-1 p-2 border rounded-md" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="animal-age" class="block text-gray-700 font-medium">Age</label>
+                        <input type="text" id="animal-age" class="w-full mt-1 p-2 border rounded-md">
+                    </div>
+                    <div class="mb-4">
+                        <label for="owner-name" class="block text-gray-700 font-medium">Owner Name</label>
+                        <input type="text" id="owner-name" class="w-full mt-1 p-2 border rounded-md" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="disease" class="block text-gray-700 font-medium">Disease/Condition</label>
+                        <input type="text" id="disease" class="w-full mt-1 p-2 border rounded-md" required>
+                    </div>
+                     <div class="mb-4">
+                        <label for="medical-condition" class="block text-gray-700 font-medium">Medical Condition</label>
+                        <select id="medical-condition" class="w-full mt-1 p-2 border rounded-md">
+                            <option>Good</option>
+                            <option>Fair</option>
+                            <option>Poor</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="medicine-prescription" class="block text-gray-700 font-medium">Medicine Prescription</label>
+                        <textarea id="medicine-prescription" class="w-full mt-1 p-2 border rounded-md" rows="3"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="treatment" class="block text-gray-700 font-medium">Treatment Administered (Manual Notes)</label>
+                        <textarea id="treatment" class="w-full mt-1 p-2 border rounded-md" rows="3"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="birth-place" class="block text-gray-700 font-medium">Place of Birth</label>
+                        <input type="text" id="birth-place" class="w-full mt-1 p-2 border rounded-md">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-md font-semibold hover:bg-blue-700">Add Animal</button>
+                </form>
+            </div>
+
+            <!-- Animal List -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-semibold text-gray-700">Animal Records</h2>
+                    <button id="add-signature-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-gray-700">Add Signature</button>
+                </div>
+                <div class="mb-4">
+                    <label for="sort-by" class="block text-gray-700 font-medium">Sort By</label>
+                    <select id="sort-by" class="w-full mt-1 p-2 border rounded-md">
+                        <option value="animal-name">Animal Name</option>
+                        <option value="owner-name">Owner Name</option>
+                        <option value="disease">Disease</option>
+                    </select>
+                </div>
+                <p class="text-sm text-gray-500 mb-2">Click on a row to select an animal for AI note insertion.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="bg-gray-200 text-left text-gray-600">
+                                <th class="p-3 font-semibold">Animal Name</th>
+                                <th class="p-3 font-semibold">Animal Type</th>
+                                <th class="p-3 font-semibold">Owner Name</th>
+                                <th class="p-3 font-semibold">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="animal-list">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Vetlist AI -->
+        <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-700 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                Vetlist AI Assistant
+            </h2>
+            <div class="mb-4">
+                <label for="ai-input" class="block text-gray-700 font-medium">Ask for treatment suggestions or other veterinary questions.</label>
+                <input type="text" id="ai-input" class="w-full mt-1 p-2 border rounded-md" placeholder="e.g., 'Compare treatments for fleas and ticks in a table'">
+            </div>
+            <button id="ai-ask-btn" class="bg-green-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-600 flex items-center justify-center">
+                <span id="ai-btn-text">Ask Vetlist AI</span>
+                <div id="ai-loader" class="loader hidden ml-2"></div>
+            </button>
+            <div id="ai-response" class="mt-4 p-4 bg-white rounded-md min-h-[50px] border">
+                <p class="text-gray-600">AI responses will appear here. For any medical advice, please consult a certified veterinarian.</p>
+            </div>
+            <div id="ai-actions" class="mt-2 hidden">
+                <button id="insert-ai-btn" class="bg-yellow-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-yellow-600">Insert to Report</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="animal-chooser-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <h2 class="text-xl font-semibold mb-4">AI-Powered Animal Type Search</h2>
+            <p class="text-gray-600 mb-4">Describe the animal you are treating. The AI will suggest common breeds or types found in India.</p>
+            <input type="text" id="animal-search-input" class="w-full p-2 border rounded-md mb-4" placeholder="e.g., 'small city dog'">
+            <button id="animal-search-ask-btn" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 flex items-center justify-center">
+                <span id="animal-search-btn-text">Get Suggestions</span>
+                 <div id="animal-search-loader" class="loader hidden ml-2"></div>
+            </button>
+            <div id="animal-suggestions" class="mt-4 max-h-48 overflow-y-auto"></div>
+            <button id="close-modal-btn" class="mt-4 w-full bg-gray-200 text-gray-700 p-2 rounded-md hover:bg-gray-300">Close</button>
+        </div>
+    </div>
+
+    <div id="signature-modal" class="modal-overlay hidden">
+        <div class="modal-container text-center">
+            <h2 class="text-xl font-semibold mb-4">Provide Signature</h2>
+            <canvas id="signature-pad" width="400" height="200"></canvas>
+            <div class="mt-4 flex space-x-2">
+                <button id="clear-signature-btn" class="w-full bg-gray-200 text-gray-700 p-2 rounded-md hover:bg-gray-300">Clear</button>
+                <button id="save-signature-btn" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600">Save Signature</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const addAnimalForm = document.getElementById('add-animal-form');
+            const animalList = document.getElementById('animal-list');
+            const sortBy = document.getElementById('sort-by');
+            const aiInput = document.getElementById('ai-input');
+            const aiAskBtn = document.getElementById('ai-ask-btn');
+            const aiResponse = document.getElementById('ai-response');
+            const aiBtnText = document.getElementById('ai-btn-text');
+            const aiLoader = document.getElementById('ai-loader');
+            const aiActions = document.getElementById('ai-actions');
+            const insertAiBtn = document.getElementById('insert-ai-btn');
+            const aiSearchBtn = document.getElementById('ai-search-btn');
+            const animalChooserModal = document.getElementById('animal-chooser-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const animalSearchInput = document.getElementById('animal-search-input');
+            const animalSearchAskBtn = document.getElementById('animal-search-ask-btn');
+            const animalSearchBtnText = document.getElementById('animal-search-btn-text');
+            const animalSearchLoader = document.getElementById('animal-search-loader');
+            const animalSuggestions = document.getElementById('animal-suggestions');
+            const addSignatureBtn = document.getElementById('add-signature-btn');
+            const signatureModal = document.getElementById('signature-modal');
+            const signaturePad = document.getElementById('signature-pad');
+            const clearSignatureBtn = document.getElementById('clear-signature-btn');
+            const saveSignatureBtn = document.getElementById('save-signature-btn');
+
+            // App state
+            let animals = [];
+            let selectedAnimalId = null;
+            let signatureImage = null;
+
+            // --- DATA PERSISTENCE LOGIC ---
+            function saveData() {
+                const dataToSave = {
+                    animals: animals,
+                    signature: signatureImage
+                };
+                localStorage.setItem('vettechData', JSON.stringify(dataToSave));
+            }
+
+            function loadData() {
+                const savedData = localStorage.getItem('vettechData');
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    animals = parsedData.animals || [];
+                    signatureImage = parsedData.signature || null;
+                    renderAnimals();
+                }
+            }
+
+
+            // Signature Pad Logic
+            const ctx = signaturePad.getContext('2d');
+            let drawing = false;
+
+            function getMousePos(canvas, evt) {
+                const rect = canvas.getBoundingClientRect();
+                return { x: evt.clientX - rect.left, y: evt.clientY - rect.top };
+            }
+            function getTouchPos(canvas, touch) {
+                const rect = canvas.getBoundingClientRect();
+                return { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+            }
+
+            signaturePad.addEventListener('mousedown', (e) => {
+                drawing = true;
+                const pos = getMousePos(signaturePad, e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            });
+            signaturePad.addEventListener('mouseup', () => drawing = false);
+            signaturePad.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                const pos = getMousePos(signaturePad, e);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            });
+            signaturePad.addEventListener('touchstart', (e) => {
+                drawing = true;
+                const pos = getTouchPos(signaturePad, e.touches[0]);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            });
+            signaturePad.addEventListener('touchend', () => drawing = false);
+            signaturePad.addEventListener('touchmove', (e) => {
+                if (!drawing) return;
+                e.preventDefault();
+                const pos = getTouchPos(signaturePad, e.touches[0]);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            });
+
+            function clearSignature() {
+                ctx.clearRect(0, 0, signaturePad.width, signaturePad.height);
+            }
+
+            addSignatureBtn.addEventListener('click', () => signatureModal.classList.remove('hidden'));
+            clearSignatureBtn.addEventListener('click', clearSignature);
+            saveSignatureBtn.addEventListener('click', () => {
+                signatureImage = signaturePad.toDataURL('image/png');
+                saveData(); // Save signature
+                signatureModal.classList.add('hidden');
+                alert('Signature saved!');
+            });
+            signatureModal.addEventListener('click', (e) => {
+                if (e.target === signatureModal) {
+                    signatureModal.classList.add('hidden');
+                }
+            });
+
+
+            // Event Listeners
+            addAnimalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newAnimal = {
+                    'animal-type': document.getElementById('animal-type').value,
+                    'animal-name': document.getElementById('animal-name').value,
+                    'animal-age': document.getElementById('animal-age').value,
+                    'owner-name': document.getElementById('owner-name').value,
+                    disease: document.getElementById('disease').value,
+                    'medical-condition': document.getElementById('medical-condition').value,
+                    'medicine-prescription': document.getElementById('medicine-prescription').value,
+                    treatment: document.getElementById('treatment').value,
+                    'birth-place': document.getElementById('birth-place').value,
+                    id: Date.now(),
+                    ai_treatment_notes: ''
+                };
+                animals.push(newAnimal);
+                saveData(); // Save after adding
+                renderAnimals();
+                addAnimalForm.reset();
+            });
+
+            sortBy.addEventListener('change', renderAnimals);
+            aiAskBtn.addEventListener('click', handleAiQuery);
+            insertAiBtn.addEventListener('click', insertAiNotes);
+            aiSearchBtn.addEventListener('click', () => animalChooserModal.classList.remove('hidden'));
+            closeModalBtn.addEventListener('click', () => animalChooserModal.classList.add('hidden'));
+            animalSearchAskBtn.addEventListener('click', getAnimalSuggestions);
+            
+            // --- FINAL, RELIABLE DOCUMENT DOWNLOAD LOGIC ---
+            function generateReportHtml(animal) {
+                const aiNotesHtml = animal.ai_treatment_notes ? marked.parse(animal.ai_treatment_notes) : '';
+
+                return `
+                    <!DOCTYPE html>
+                    <html lang="en">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Report for ${animal['animal-name']}</title>
+                        <style>
+                            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; background-color: #f1f5f9; display: flex; justify-content: center; }
+                            .page { position: relative; background: white; width: 210mm; min-height: 297mm; padding: 25mm; margin: 10mm auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+                            h1 { font-size: 22px; color: #1e293b; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; }
+                            h2 { font-size: 14px; font-weight: 600; color: #fff; padding: 8px 12px; margin-top: 20px; margin-bottom: 10px; border-radius: 4px; }
+                            .manual-header { background-color: #4338ca; }
+                            .ai-header { background-color: #16a34a; }
+                            .info-table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 16px; }
+                            .info-table th { width: 180px; text-align: left; font-weight: 600; padding: 10px 0; color: #475569; }
+                            .info-table td { text-align: left; padding: 10px 0; color: #1e293b; }
+                            .manual-notes p { line-height: 1.6; color: #334155; font-size: 16px; }
+                            .ai-notes { font-size: 11px; }
+                            .ai-notes p, .ai-notes li { font-size: 11px; line-height: 1.5; }
+                            .ai-notes table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 10px; }
+                            .ai-notes th, .ai-notes td { border: 1px solid #e2e8f0; padding: 5px 7px; }
+                            .ai-notes th { background-color: #f8fafc; font-weight: 600; }
+                            .ai-notes ul, .ai-notes ol { padding-left: 20px; }
+                            .signature-block { margin-top: 50px; }
+                            .signature-block p { font-size: 14px; margin: 0; }
+                            .signature-block img { max-width: 150px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="page">
+                            <div> <!-- Content wrapper -->
+                                <h1>Report for ${animal['animal-name']} (${animal['animal-type']})</h1>
+                                <table class="info-table">
+                                    <tr><th>Owner Name:</th><td>${animal['owner-name']}</td></tr>
+                                    <tr><th>Animal Age:</th><td>${animal['animal-age']}</td></tr>
+                                    <tr><th>Disease/Condition:</th><td>${animal.disease}</td></tr>
+                                    <tr><th>Medical Status:</th><td>${animal['medical-condition']}</td></tr>
+                                    <tr><th>Place of Birth:</th><td>${animal['birth-place']}</td></tr>
+                                    <tr><th>Report Generated:</th><td>${new Date().toLocaleDateString()}</td></tr>
+                                </table>
+
+                                 ${animal['medicine-prescription'] ? `<div class="manual-notes"><h2 class="manual-header">Medicine Prescription</h2><p>${animal['medicine-prescription'].replace(/\n/g, '<br>')}</p></div>` : ''}
+                                 ${animal.treatment ? `<div class="manual-notes"><h2 class="manual-header">Manual Treatment Notes</h2><p>${animal.treatment.replace(/\n/g, '<br>')}</p></div>` : ''}
+                                 ${aiNotesHtml ? `<div><h2 class="ai-header">Vetlist AI Suggestions</h2><div class="ai-notes">${aiNotesHtml}</div></div>` : ''}
+                            </div>
+                             ${signatureImage ? `<div class="signature-block"><p>Dr. Avi vet 🐾🩺</p><img src="${signatureImage}" alt="Signature"/></div>` : ''}
+                        </div>
+                    </body>
+                    </html>
+                `;
+            }
+
+            function downloadReport(animalId) {
+                const animal = animals.find(a => a.id === animalId);
+                if (!animal) return;
+
+                const htmlContent = generateReportHtml(animal);
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Report for ${animal['animal-name']}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            // Rendering Logic
+            function renderAnimals() {
+                const sortKey = sortBy.value;
+                const sortedAnimals = [...animals].sort((a, b) => (a[sortKey] || '').localeCompare(b[sortKey] || ''));
+                
+                animalList.innerHTML = ''; 
+                
+                if (sortedAnimals.length === 0) {
+                    animalList.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">No animal records yet.</td></tr>`;
+                    return;
+                }
+
+                sortedAnimals.forEach(animal => {
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-gray-50 cursor-pointer';
+                    row.dataset.animalId = animal.id;
+                    if (animal.id === selectedAnimalId) {
+                        row.classList.add('selected-row');
+                    }
+
+                    row.innerHTML = `
+                        <td class="p-3">${animal['animal-name']}</td>
+                        <td class="p-3">${animal['animal-type']}</td>
+                        <td class="p-3">${animal['owner-name']}</td>
+                        <td class="p-3 flex space-x-2">
+                            <button data-id="${animal.id}" class="download-report-btn bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full hover:bg-blue-200">Download</button>
+                            <button data-id="${animal.id}" class="delete-animal-btn bg-red-100 text-red-800 text-sm font-semibold px-3 py-1 rounded-full hover:bg-red-200">Delete</button>
+                        </td>
+                    `;
+                    animalList.appendChild(row);
+
+                    row.addEventListener('click', () => {
+                        selectedAnimalId = animal.id;
+                        renderAnimals();
+                    });
+                });
+
+                document.querySelectorAll('.download-report-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        const animalId = parseInt(e.target.getAttribute('data-id'));
+                        downloadReport(animalId);
+                    });
+                });
+
+                document.querySelectorAll('.delete-animal-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        const animalId = parseInt(e.target.getAttribute('data-id'));
+                        deleteAnimal(animalId);
+                    });
+                });
+            }
+
+            function deleteAnimal(animalId) {
+                if (confirm('Are you sure you want to delete this record permanently?')) {
+                    animals = animals.filter(animal => animal.id !== animalId);
+                    saveData();
+                    renderAnimals();
+                }
+            }
+
+            // AI and Data Insertion Logic
+            function insertAiNotes() {
+                if (!selectedAnimalId) {
+                    alert("Please select an animal from the list first to add notes.");
+                    return;
+                }
+                const animal = animals.find(a => a.id === selectedAnimalId);
+                const responseToInsert = insertAiBtn.dataset.response; // Read from button
+                if (animal && responseToInsert) {
+                    animal.ai_treatment_notes += (animal.ai_treatment_notes ? '\n\n---\n\n' : '') + responseToInsert;
+                    saveData(); // Save after updating notes
+                    
+                    insertAiBtn.textContent = '✓ Inserted';
+                    insertAiBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
+                    insertAiBtn.classList.add('bg-green-600', 'cursor-not-allowed');
+                    insertAiBtn.disabled = true;
+
+                    alert(`AI notes have been added to the report data for ${animal['animal-name']}.`);
+                }
+            }
+            
+            async function getAnimalSuggestions() {
+                const query = animalSearchInput.value.trim();
+                if (!query) {
+                    animalSuggestions.innerHTML = `<p class="text-red-500">Please describe an animal.</p>`;
+                    return;
+                }
+
+                animalSearchBtnText.textContent = 'Searching...';
+                animalSearchLoader.classList.remove('hidden');
+                animalSearchAskBtn.disabled = true;
+                animalSuggestions.innerHTML = '';
+
+                const prompt = `List 5 common animal breeds or types found in India that match this description: "${query}". Provide only a comma-separated list of names. For example: Labrador Retriever, Indian Pariah Dog, German Shepherd, Pug, Beagle`;
+                
+                try {
+                    const responseText = await callGemini(prompt);
+                    const suggestions = responseText.split(',').map(s => s.trim());
+                    
+                    if (suggestions.length > 0) {
+                        suggestions.forEach(name => {
+                            const button = document.createElement('button');
+                            button.textContent = name;
+                            button.className = 'block w-full text-left p-2 rounded-md hover:bg-gray-100';
+                            button.onclick = () => {
+                                document.getElementById('animal-type').value = name;
+                                animalChooserModal.classList.add('hidden');
+                            };
+                            animalSuggestions.appendChild(button);
+                        });
+                    } else {
+                        animalSuggestions.innerHTML = `<p class="text-gray-500">No suggestions found.</p>`;
+                    }
+
+                } catch (error) {
+                     animalSuggestions.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+                } finally {
+                    animalSearchBtnText.textContent = 'Get Suggestions';
+                    animalSearchLoader.classList.add('hidden');
+                    animalSearchAskBtn.disabled = false;
+                }
+            }
+
+            async function callGemini(prompt) {
+                const apiKey = "AIzaSyBXckqOnMBbAakqacwCDBKhnUbjSLQlW9Q"; // Your API Key is now here
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("Invalid response structure from AI.");
+                }
+            }
+            
+            async function handleAiQuery() {
+                const prompt = aiInput.value.trim();
+                if (!prompt) {
+                    aiResponse.innerHTML = `<p class="text-red-500">Please enter a question.</p>`;
+                    return;
+                }
+
+                aiBtnText.textContent = 'Thinking...';
+                aiLoader.classList.remove('hidden');
+                aiAskBtn.disabled = true;
+                aiActions.classList.add('hidden');
+                aiResponse.innerHTML = '';
+
+                insertAiBtn.textContent = 'Insert to Report';
+                insertAiBtn.classList.remove('bg-green-600', 'cursor-not-allowed');
+                insertAiBtn.classList.add('bg-yellow-500', 'hover:bg-yellow-600');
+                insertAiBtn.disabled = false;
+                insertAiBtn.removeAttribute('data-response'); // Clear old response
+                
+                let fullPrompt = `You are a helpful veterinary assistant. Provide a concise and informative answer for the following query. Use Markdown for formatting (e.g., **bold**, *italics*, tables, lists). Always include a disclaimer to consult a certified veterinarian for actual medical advice. Query: ${prompt}`;
+
+                if (selectedAnimalId) {
+                    const animal = animals.find(a => a.id === selectedAnimalId);
+                    if (animal) {
+                        const context = `CONTEXT: The animal is a ${animal['animal-age']} old ${animal['animal-type']} named ${animal['animal-name']}. Current disease/condition is "${animal.disease}" and its medical status is "${animal['medical-condition']}".`;
+                        fullPrompt = `You are a helpful veterinary assistant. ${context} Based on this, provide a concise and informative answer for the following query. Use Markdown for formatting (e.g., **bold**, *italics*, tables, lists). Always include a disclaimer to consult a certified veterinarian for actual medical advice. Query: ${prompt}`;
+                    }
+                }
+
+
+                try {
+                    const text = await callGemini(fullPrompt);
+                    insertAiBtn.dataset.response = text; // Store response on the button
+                    aiResponse.innerHTML = marked.parse(text); 
+                    aiActions.classList.remove('hidden'); 
+                } catch (error) {
+                    console.error("AI Assistant Error:", error);
+                    if (error.message && (error.message.includes('401') || error.message.includes('403'))) {
+                        aiResponse.innerHTML = `<p class="text-red-500"><strong>Authentication Error:</strong> Could not connect to the AI service. The provided API key may be invalid or have restrictions. Please check the key and try again.</p>`;
+                    } else {
+                        aiResponse.innerHTML = `<p class="text-red-500">Sorry, I couldn't get a response. Please check your connection and try again.</p>`;
+                    }
+                } finally {
+                    aiBtnText.textContent = 'Ask Vetlist AI';
+                    aiLoader.classList.add('hidden');
+                    aiAskBtn.disabled = false;
+                    aiInput.value = '';
+                }
+            }
+
+            // Initial Load
+            loadData();
+        });
+    </script>
+
+</body>
+</html>
