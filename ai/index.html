@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether AI — The Intelligent Web</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div id="page-transition" aria-hidden="true"></div>
+
+    <header class="site-header">
+        <div class="container">
+            <a class="brand" href="#home">Aether AI</a>
+            <nav class="main-nav" aria-label="Primary Navigation">
+                <a href="#home" data-nav>Home</a>
+                <a href="#capabilities" data-nav>Capabilities</a>
+                <a href="#showcase" data-nav>Showcase</a>
+                <a href="#research" data-nav>Research</a>
+                <a href="#contact" data-nav>Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <section id="home" class="section hero" data-section>
+        <canvas id="hero-canvas" aria-label="AI Particle Canvas" role="img"></canvas>
+        <div class="hero-content container">
+            <h1>
+                <span class="eyebrow">Artificial Intelligence</span>
+                Designing the Future on the Dot
+            </h1>
+            <p>Next‑gen human + machine intelligence. Fluid, tactile, and stunningly fast.
+            </p>
+            <div class="cta-row">
+                <a class="btn primary" href="#capabilities">Explore</a>
+                <button class="btn ghost" id="remix">Remix Animation</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="capabilities" class="section features" data-section>
+        <div class="container">
+            <div class="section-intro">
+                <h2>Capabilities</h2>
+                <p>Built with GPU-accelerated particles, morphing typography, and physically-inspired motion.
+                </p>
+            </div>
+            <div class="grid">
+                <article class="card">
+                    <h3>Perception</h3>
+                    <p>Real-time clustering, denoising, and attention-driven sampling to perceive the world.</p>
+                </article>
+                <article class="card">
+                    <h3>Reasoning</h3>
+                    <p>Composable agents with tool use and memory—navigating tasks with measurable reliability.</p>
+                </article>
+                <article class="card">
+                    <h3>Generation</h3>
+                    <p>High-fidelity text, image, and code generation with human-in-the-loop safety rails.</p>
+                </article>
+                <article class="card">
+                    <h3>Trust</h3>
+                    <p>Transparent evaluations, adversarial red‑teaming, and privacy-first data pipelines.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="showcase" class="section showcase" data-section>
+        <div class="container">
+            <div class="section-intro">
+                <h2>Showcase</h2>
+                <p>Each scroll morphs the particle field into new ideas: AI, FUTURE, HUMAN + MACHINE, ∞.</p>
+            </div>
+            <div class="gallery">
+                <figure class="panel" data-morph="AI">
+                    <figcaption>AI</figcaption>
+                </figure>
+                <figure class="panel" data-morph="FUTURE">
+                    <figcaption>Future</figcaption>
+                </figure>
+                <figure class="panel" data-morph="HUMAN + MACHINE">
+                    <figcaption>Human + Machine</figcaption>
+                </figure>
+                <figure class="panel" data-morph="∞">
+                    <figcaption>Infinity</figcaption>
+                </figure>
+            </div>
+        </div>
+    </section>
+
+    <section id="research" class="section research" data-section>
+        <div class="container">
+            <div class="section-intro">
+                <h2>Research</h2>
+                <p>Read our notes on alignment, scaling laws, and differentiable rendering for interactive ML systems.</p>
+            </div>
+            <div class="columns">
+                <article>
+                    <h3>Alignment</h3>
+                    <p>Multi-objective reinforcement learning with interpretable reward decomposition and risk bounds.</p>
+                </article>
+                <article>
+                    <h3>Scaling</h3>
+                    <p>Mixture-of-experts with sparse activation and KV cache distillation for on-device inference.</p>
+                </article>
+                <article>
+                    <h3>Rendering</h3>
+                    <p>Particle-based signed‑distance morphing for typography and shapes, backed by blue‑noise sampling.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section contact" data-section>
+        <div class="container">
+            <div class="cta">
+                <h2>Build with Aether</h2>
+                <p>Bring intelligence to your product with delightful performance. Let’s collaborate.</p>
+                <form class="contact-form" id="contact-form">
+                    <div class="row">
+                        <input type="text" name="name" placeholder="Name" required>
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <textarea name="message" rows="5" placeholder="Your message"></textarea>
+                    <button type="submit" class="btn primary">Send</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>© <span id="year"></span> Aether AI. Crafted for speed, accessibility, and wonder.</p>
+        </div>
+    </footer>
+
+    <script src="./main.js" type="module"></script>
+</body>
+</html>
+
